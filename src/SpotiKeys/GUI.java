@@ -8,7 +8,12 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
+import com.apple.eawt.AppEvent.AboutEvent;
+import com.apple.eawt.Application;
+import com.apple.eawt.QuitStrategy;
+
 import javax.swing.JCheckBox;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -19,11 +24,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.ArrayList;
-
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
-public class GUI extends JFrame implements KeyListener {
-
+import com.apple.eawt.AboutHandler;
+public class GUI extends JFrame implements KeyListener{
 	private JPanel contentPane;
 	private String bindOn = "Binding";
 	private String bindOff = "Bind Keys";
@@ -45,27 +50,52 @@ public class GUI extends JFrame implements KeyListener {
 
 	/**
 	 * Launch the application.
-	 */
+	 */  
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				Main.run();
 				try {
 					GUI frame = new GUI();
+					frame.setAboutHandler();;
 					frame.setVisible(true);
+					frame.setquitHandler();
 				} catch (Exception e) {
-					e.printStackTrace();
-				}
+					e.printStackTrace();  
+				}  
 			}
 		});
 	}
-
+	/**
+	 * Create about page
+	 */
+	private void setAboutHandler() {
+		Application a = Application.getApplication();
+		a.setAboutHandler(new AboutHandler() {
+			
+			@Override
+			public void handleAbout(AboutEvent e){
+				ImageIcon icon = new ImageIcon("icon/application.png"); 
+				JLabel label = new JLabel();
+				label.setText("<html>© 2016 Ivan Shen<br>This is a FREE software.<br>Please visit my website: <a href='ivanshen.github.io'>ivanshen.github.io</a></html>");
+				JOptionPane.showMessageDialog(null, label, "SpotiKeys",
+						JOptionPane.INFORMATION_MESSAGE, icon);
+			}
+		});
+	}
+	private void setquitHandler(){
+		Application a = Application.getApplication();
+		a.setQuitStrategy(QuitStrategy.SYSTEM_EXIT_0);
+	}
 	/**
 	 * Create the frame.
 	 */
 	public GUI() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(200, 200, 500, 450);
+		System.setProperty("apple.awt.graphics.EnableQ2DX", "true");
+	    System.setProperty("apple.laf.useScreenMenuBar", "true");
+	    System.setProperty("com.apple.mrj.application.apple.menu.about.name", "SpotiKeys");
+		setExtendedState(JFrame.ICONIFIED);
+		setBounds(200, 200, 500, 475);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -76,7 +106,7 @@ public class GUI extends JFrame implements KeyListener {
 		InputMap im2 = (InputMap) UIManager.get("CheckBox.focusInputMap");
 		im2.put(KeyStroke.getKeyStroke("pressed SPACE"), "none");
 		im2.put(KeyStroke.getKeyStroke("released SPACE"), "none");
-
+		
 		chckbxPlaypause.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
@@ -544,7 +574,6 @@ public class GUI extends JFrame implements KeyListener {
 		}
 		return formatted.toString().replace("[", "").replace("]", "");
 	}
-
 	@Override
 	public void keyTyped(KeyEvent e) {
 		// TODO Auto-generated method stub
